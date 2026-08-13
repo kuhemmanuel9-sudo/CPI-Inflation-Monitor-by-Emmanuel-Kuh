@@ -6,6 +6,9 @@ CPI Inflation Monitor is a single-file economic analytics dashboard that turns C
 
 The project is built for a portfolio because it shows data retrieval, time-series transformation, inflation calculations, custom visualization, responsive interface design, and browser-based voice briefing in one polished experience.
 
+live here:https://kuhemmanuel9-sudo.github.io/CPI-Inflation-Monitor-by-Emmanuel-Kuh/
+
+
 ## What It Does
 
 - Loads CPI-U data from the U.S. Bureau of Labor Statistics Public Data API when the browser request succeeds
