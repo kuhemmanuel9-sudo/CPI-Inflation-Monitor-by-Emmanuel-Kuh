@@ -49,10 +49,6 @@ Main not seasonally adjusted CPI series used for year-over-year inflation and in
 
 Seasonally adjusted versions of the same category series are requested with `CUSR` prefixes for month-to-month movement. The dashboard requests 18 total series across roughly eight calendar years, which stays below the BLS public API limits documented for version 2.0.
 
-## How To Use
-
-Open `cpi-inflation-dashboard.html` in a browser, or upload the included `index.html` version to a GitHub Pages repository.
-
 
 ## Notes
 
