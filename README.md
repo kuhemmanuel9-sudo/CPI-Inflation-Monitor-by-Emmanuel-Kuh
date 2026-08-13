@@ -27,7 +27,7 @@ The dashboard uses the BLS Public Data API:
 
 https://www.bls.gov/developers/api_signature_v2.htm
 
-Series IDs were checked against the BLS CPI series file:
+Series IDs in this project were verified against the BLS CPI series file on August 13, 2026:
 
 https://download.bls.gov/pub/time.series/cu/cu.series
 
@@ -47,7 +47,7 @@ Main not seasonally adjusted CPI series used for year-over-year inflation and in
 - `CUUR0000SAA` Apparel
 - `CUUR0000SAE` Education and communication
 
-Seasonally adjusted versions of the same category series are requested with `CUSR` prefixes for month-to-month movement. The dashboard requests 18 total series across roughly eight calendar years, which stays below the public BLS limits documented for the API.
+Seasonally adjusted versions of the same category series are requested with `CUSR` prefixes for month-to-month movement. The dashboard requests 18 total series across roughly eight calendar years, which stays below the BLS public API limits documented for version 2.0.
 
 ## How To Use
 
