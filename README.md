@@ -53,12 +53,6 @@ Seasonally adjusted versions of the same category series are requested with `CUS
 
 Open `cpi-inflation-dashboard.html` in a browser, or upload the included `index.html` version to a GitHub Pages repository.
 
-For GitHub Pages:
-
-1. Create a new repository.
-2. Rename `cpi-inflation-dashboard.html` to `index.html`.
-3. Upload the file.
-4. Go to repository settings and enable GitHub Pages from the main branch.
 
 ## Notes
 
