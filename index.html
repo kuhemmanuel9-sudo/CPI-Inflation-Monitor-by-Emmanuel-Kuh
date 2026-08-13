@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="CPI Inflation Monitor, a Consumer Price Index analytics dashboard designed and developed by Emmanuel Kuh.">
+  <title>CPI Inflation Monitor | Emmanuel Kuh</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07090d;
+      --bg-soft: #0d1118;
+      --panel: rgba(18, 23, 32, 0.88);
+      --panel-strong: rgba(22, 29, 40, 0.96);
+      --line: rgba(178, 196, 219, 0.16);
+      --line-strong: rgba(188, 206, 231, 0.26);
+      --text: #f4f7fb;
+      --muted: #94a3b8;
+      --quiet: #6f7d90;
+      --accent: #57d39f;
+      --accent-2: #f1b84b;
+      --accent-3: #78a8ff;
+      --danger: #f06464;
+      --surface: rgba(255, 255, 255, 0.045);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+      --radius: 8px;
+      --bar-height: 74px;
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --bg-soft: #e9eef6;
+      --panel: rgba(255, 255, 255, 0.92);
+      --panel-strong: rgba(255, 255, 255, 0.98);
+      --line: rgba(31, 45, 66, 0.14);
+      --line-strong: rgba(31, 45, 66, 0.24);
+      --text: #101827;
+      --muted: #596779;
+      --quiet: #768398;
+      --surface: rgba(16, 24, 39, 0.055);
+      --shadow: 0 24px 70px rgba(42, 56, 82, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 0;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-width: 0;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        linear-gradient(110deg, rgba(87, 211, 159, 0.08), transparent 28%),
+        linear-gradient(245deg, rgba(120, 168, 255, 0.10), transparent 32%),
+        radial-gradient(circle at 50% -20%, rgba(241, 184, 75, 0.12), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 82%);
+      pointer-events: none;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .app-shell {
+      width: min(1440px, 100%);
+      min-width: 0;
+      margin: 0 auto;
+      padding: 16px 18px 34px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 10px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+      min-height: var(--bar-height);
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--panel-strong), transparent 8%);
+      box-shadow: 0 14px 50px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(20px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(87, 211, 159, 0.34);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(87, 211, 159, 0.28), rgba(120, 168, 255, 0.10)),
+        rgba(255, 255, 255, 0.03);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      color: var(--accent);
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 21px;
+      line-height: 1.08;
+      letter-spacing: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .brand-text p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    .nav {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav a,
+    .mobile-dock a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+      transition: 180ms ease;
+      white-space: nowrap;
+    }
+
+    .nav a:hover,
+    .mobile-dock a:hover {
+      border-color: var(--line);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      min-width: 0;
+    }
+
+    .control-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      min-width: 0;
+      padding: 0 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      white-space: nowrap;
+    }
+
+    .control-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(87, 211, 159, 0.42);
+      background: rgba(87, 211, 159, 0.11);
+    }
+
+    .control-button.primary {
+      border-color: rgba(87, 211, 159, 0.5);
+      background: linear-gradient(135deg, rgba(87, 211, 159, 0.22), rgba(120, 168, 255, 0.12));
+      color: var(--text);
+    }
+
+    .control-button .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 18px var(--accent);
+    }
+
+    .overview {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+      gap: 16px;
+      align-items: stretch;
+      min-width: 0;
+      padding: 18px 0 14px;
+    }
+
+    .intro-panel,
+    .panel,
+    .metric-card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .intro-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 24px;
+    }
+
+    .intro-panel::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      bottom: -110px;
+      width: 260px;
+      height: 260px;
+      border: 1px solid rgba(87, 211, 159, 0.2);
+      border-radius: 50%;
+      background: repeating-conic-gradient(from 0deg, rgba(87, 211, 159, 0.06) 0deg 9deg, rgba(120, 168, 255, 0.04) 9deg 18deg);
+      opacity: 0.72;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid rgba(87, 211, 159, 0.28);
+      border-radius: 999px;
+      background: rgba(87, 211, 159, 0.08);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0;
+    }
+
+    .intro-panel h2 {
+      max-width: 720px;
+      margin: 18px 0 12px;
+      font-size: 50px;
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .intro-panel .lead {
+      max-width: 690px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .credit-line {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .credit-line strong {
+      color: var(--text);
+    }
+
+    .source-stack {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .metric-card {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+    }
+
+    .metric-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      pointer-events: none;
+    }
+
+    .metric-label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 0;
+      margin: 0 0 11px;
+      color: var(--quiet);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      margin: 0;
+      overflow-wrap: anywhere;
+      color: var(--text);
+      font-size: 38px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .metric-sub {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pulse-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 0;
+      margin: 0 0 12px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-pill strong {
+      color: var(--text);
+      font-weight: 850;
+    }
+
+    .demo-banner {
+      display: none;
+      min-width: 0;
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border: 1px solid rgba(241, 184, 75, 0.42);
+      border-radius: var(--radius);
+      background: rgba(241, 184, 75, 0.12);
+      color: var(--muted);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+    }
+
+    .demo-banner.is-visible {
+      display: block;
+    }
+
+    .demo-banner strong {
+      color: var(--accent-2);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.26fr) minmax(320px, 0.74fr);
+      gap: 16px;
+      align-items: start;
+      min-width: 0;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-header {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      min-width: 0;
+      margin-bottom: 16px;
+    }
+
+    .panel-title {
+      min-width: 0;
+    }
+
+    .panel-title h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .panel-title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .segmented {
+      display: inline-flex;
+      flex: 0 0 auto;
+      gap: 4px;
+      align-items: center;
+      max-width: 100%;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.14);
+    }
+
+    .segmented button {
+      min-height: 30px;
+      padding: 0 10px;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .segmented button[aria-pressed="true"] {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .chart-frame {
+      position: relative;
+      width: 100%;
+      height: 430px;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+        rgba(0, 0, 0, 0.16);
+    }
+
+    #cpiChart {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      z-index: 5;
+      display: none;
+      max-width: 210px;
+      min-width: 150px;
+      padding: 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel-strong), #000 10%);
+      color: var(--text);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+    }
+
+    .chart-tooltip strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .chart-tooltip span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .category-tile {
+      position: relative;
+      min-width: 0;
+      min-height: 154px;
+      overflow: hidden;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text);
+      text-align: left;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .category-tile:hover,
+    .category-tile[aria-pressed="true"] {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--heat), white 10%);
+      background: color-mix(in srgb, var(--heat), transparent 86%);
+    }
+
+    .category-tile h4 {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .category-tile .series-code {
+      display: block;
+      margin-top: 4px;
+      color: var(--quiet);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .category-tile .tile-rate {
+      display: block;
+      margin-top: 14px;
+      color: color-mix(in srgb, var(--heat), white 18%);
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .category-tile .tile-note {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .sparkline {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-items: end;
+      gap: 3px;
+      height: 28px;
+      margin-top: 14px;
+    }
+
+    .sparkline span {
+      display: block;
+      min-width: 0;
+      border-radius: 3px 3px 0 0;
+      background: color-mix(in srgb, var(--heat), transparent 18%);
+      opacity: 0.82;
+    }
+
+    .right-rail {
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .pressure-dial {
+      display: grid;
+      place-items: center;
+      width: min(250px, 100%);
+      aspect-ratio: 1;
+      margin: 4px auto 18px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at center, var(--panel-strong) 0 54%, transparent 55%),
+        conic-gradient(var(--dial-color) calc(var(--score) * 1%), rgba(255, 255, 255, 0.08) 0);
+      box-shadow: inset 0 0 0 1px var(--line), 0 22px 50px rgba(0, 0, 0, 0.28);
+    }
+
+    .dial-inner {
+      display: grid;
+      place-items: center;
+      width: 62%;
+      aspect-ratio: 1;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--panel-strong), #000 10%);
+      text-align: center;
+    }
+
+    .dial-inner strong {
+      display: block;
+      font-size: 42px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .dial-inner span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .brief-text {
+      min-width: 0;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .brief-text strong {
+      color: var(--text);
+      font-weight: 850;
+    }
+
+    .control-stack {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      min-width: 0;
+      min-height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel-strong), transparent 2%);
+      color: var(--text);
+      outline: none;
+    }
+
+    .select {
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+      background-position: calc(100% - 16px) 18px, calc(100% - 10px) 18px;
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 34px;
+    }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+      padding: 11px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .range-row:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .range-row span {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .range-row strong {
+      color: var(--text);
+      font-size: 13px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .impact-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+      gap: 16px;
+      min-width: 0;
+      margin-top: 16px;
+    }
+
+    .calculator {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .impact-result {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .impact-result strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-size: 18px;
+    }
+
+    .impact-result p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .month-lattice {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 6px;
+      min-width: 0;
+      margin-top: 14px;
+    }
+
+    .month-cell {
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--heat), transparent 82%);
+      color: var(--text);
+      text-align: center;
+    }
+
+    .month-cell span {
+      display: block;
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .month-cell strong {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      letter-spacing: 0;
+    }
+
+    .method-list {
+      display: grid;
+      gap: 0;
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .method-item {
+      display: grid;
+      grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+      gap: 14px;
+      min-width: 0;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .method-item strong {
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .method-item span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .source-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 0;
+      margin-top: 16px;
+      padding: 14px 0 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .source-footer a {
+      color: var(--text);
+      font-weight: 850;
+      text-decoration: underline;
+      text-decoration-color: rgba(87, 211, 159, 0.42);
+      text-underline-offset: 3px;
+    }
+
+    .mobile-dock {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      left: 10px;
+      z-index: 50;
+      display: none;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+      padding: 7px;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--panel-strong), transparent 4%);
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(22px);
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 80;
+      display: none;
+      max-width: min(360px, calc(100vw - 36px));
+      padding: 12px 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--panel-strong);
+      color: var(--text);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+      font-size: 13px;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .metric-card,
+      .panel,
+      .intro-panel,
+      .category-tile {
+        animation: riseIn 520ms ease both;
+      }
+
+      @keyframes riseIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .overview,
+      .dashboard-grid,
+      .impact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .source-stack {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .intro-panel h2 {
+        font-size: 42px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      body {
+        padding-bottom: 82px;
+      }
+
+      .app-shell {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px 10px 24px;
+      }
+
+      .topbar {
+        position: relative;
+        top: 0;
+        grid-template-columns: 1fr;
+        min-height: 0;
+        gap: 10px;
+      }
+
+      .brand-text h1 {
+        white-space: normal;
+        font-size: 19px;
+      }
+
+      .brand-text p {
+        font-size: 12px;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .top-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .control-button {
+        width: 100%;
+        min-height: 42px;
+        padding: 0 10px;
+      }
+
+      .overview {
+        padding-top: 10px;
+      }
+
+      .intro-panel,
+      .panel,
+      .metric-card {
+        padding: 15px;
+      }
+
+      .intro-panel h2 {
+        font-size: 34px;
+      }
+
+      .intro-panel .lead {
+        font-size: 15px;
+      }
+
+      .source-stack,
+      .heatmap-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-card {
+        min-height: 138px;
+      }
+
+      .metric-value {
+        font-size: 34px;
+      }
+
+      .panel-header {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .segmented {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .segmented button {
+        flex: 1 1 auto;
+      }
+
+      .chart-frame {
+        height: 340px;
+      }
+
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+
+      .month-lattice {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+
+      .method-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .mobile-dock {
+        display: grid;
+      }
+
+      .toast {
+        right: 10px;
+        bottom: 82px;
+        max-width: calc(100vw - 20px);
+      }
+    }
+
+    @media (max-width: 430px) {
+      .brand-mark {
+        flex-basis: 38px;
+        width: 38px;
+        height: 38px;
+      }
+
+      .intro-panel h2 {
+        font-size: 30px;
+      }
+
+      .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .metric-value {
+        font-size: 31px;
+      }
+
+      .chart-frame {
+        height: 300px;
+      }
+
+      .month-lattice {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .mobile-dock a {
+        padding: 0 6px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#overview" aria-label="Go to dashboard overview">
+        <span class="brand-mark">CPI</span>
+        <span class="brand-text">
+          <h1>CPI Inflation Monitor</h1>
+          <p>Designed and Developed by Emmanuel Kuh</p>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#overview">Overview</a>
+        <a href="#chart">Chart</a>
+        <a href="#categories">Heatmap</a>
+        <a href="#voice">Voice</a>
+      </nav>
+
+      <div class="top-actions">
+        <button class="control-button" id="themeToggle" type="button">Light Mode</button>
+        <button class="control-button primary" id="refreshButton" type="button"><span class="dot"></span>Refresh Data</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="overview" id="overview" aria-labelledby="overviewTitle">
+        <div class="intro-panel">
+          <div>
+            <span class="eyebrow">Consumer Price Index Analytics</span>
+            <h2 id="overviewTitle">A cleaner way to read inflation pressure.</h2>
+            <p class="lead">
+              This dashboard turns CPI time series into a compact view of price pressure, category movement, inflation cost differences, and plain-English economic context.
+            </p>
+            <div class="hero-actions">
+              <button class="control-button primary" id="speakHeroButton" type="button">Voice Briefing</button>
+              <a class="control-button" href="#methodology">How It Works</a>
+              <a class="control-button" href="#categories">View Heatmap</a>
+            </div>
+          </div>
+          <p class="credit-line">
+            Built as a portfolio-ready economic analytics project by <strong>Emmanuel Kuh</strong>.
+          </p>
+        </div>
+
+        <div class="source-stack" aria-label="Key CPI metrics">
+          <article class="metric-card">
+            <p class="metric-label">Latest CPI Index <span class="pulse-tag" id="latestPeriod">Loading</span></p>
+            <p class="metric-value" id="headlineValue">--</p>
+            <p class="metric-sub">Headline CPI-U, not seasonally adjusted, U.S. city average.</p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">NSA Year Over Year <span class="pulse-tag" id="yoyStatus">--</span></p>
+            <p class="metric-value" id="yoyValue">--</p>
+            <p class="metric-sub">Twelve-month change from the same month last year.</p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">SA Monthly Move <span class="pulse-tag" id="momStatus">MoM</span></p>
+            <p class="metric-value" id="momValue">--</p>
+            <p class="metric-sub">Seasonally adjusted one-month change where BLS publishes an adjusted series.</p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">Core CPI <span class="pulse-tag">NSA YoY</span></p>
+            <p class="metric-value" id="coreValue">--</p>
+            <p class="metric-sub">All items less food and energy, measured year over year.</p>
+          </article>
+        </div>
+      </section>
+
+      <div class="status-row" aria-live="polite">
+        <div class="status-pill"><span>Source</span><strong id="dataSource">U.S. Bureau of Labor Statistics</strong></div>
+        <div class="status-pill"><span>Status</span><strong id="dataMode">Connecting</strong></div>
+        <div class="status-pill"><span>Updated</span><strong id="lastUpdated">Waiting for data</strong></div>
+      </div>
+
+      <div class="demo-banner" id="demoBanner" hidden>
+        <strong>Demo Mode:</strong> Live BLS data is unavailable. Values shown below are simulated for interface demonstration and should not be interpreted as actual CPI observations.
+      </div>
+
+      <section class="dashboard-grid" aria-label="Inflation analytics workspace">
+        <div class="panel" id="chart">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3 id="chartTitle">Inflation Trend</h3>
+              <p id="chartSubtitle">Headline and category movement from BLS monthly CPI readings when live data is available.</p>
+            </div>
+            <div class="segmented" aria-label="Chart display mode">
+              <button type="button" data-chart-mode="yoy" aria-pressed="true">YoY</button>
+              <button type="button" data-chart-mode="mom" aria-pressed="false">SA MoM</button>
+              <button type="button" data-chart-mode="index" aria-pressed="false">Index</button>
+            </div>
+          </div>
+
+          <div class="chart-frame">
+            <canvas id="cpiChart" aria-label="CPI time series chart"></canvas>
+            <div class="chart-tooltip" id="chartTooltip"></div>
+          </div>
+
+          <div class="source-footer">
+            <span>Period range</span>
+            <div class="segmented" aria-label="Chart period range">
+              <button type="button" data-range="2y" aria-pressed="false">2Y</button>
+              <button type="button" data-range="5y" aria-pressed="true">5Y</button>
+              <button type="button" data-range="all" aria-pressed="false">All</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="right-rail">
+          <section class="panel" aria-labelledby="pressureTitle">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3 id="pressureTitle">CPI Pressure Index</h3>
+                <p>Experimental model - 0-100, built from inflation speed, category breadth, and volatility.</p>
+              </div>
+            </div>
+            <div class="pressure-dial" id="pressureDial" style="--score: 0; --dial-color: var(--accent);">
+              <div class="dial-inner">
+                <strong id="pressureValue">--</strong>
+                <span id="pressureLabel">Loading</span>
+              </div>
+            </div>
+            <p class="brief-text" id="pressureBrief">The dashboard is preparing the first inflation reading.</p>
+          </section>
+
+          <section class="panel" id="voice" aria-labelledby="voiceTitle">
+            <div class="panel-header">
+              <div class="panel-title">
+                <h3 id="voiceTitle">Voice Inflation Brief</h3>
+                <p>Speaks the CPI reading and explains what changed, including demo mode when fallback data is shown.</p>
+              </div>
+            </div>
+            <p class="brief-text" id="inflationBrief">Loading the latest CPI narrative.</p>
+            <div class="control-stack">
+              <select class="select" id="voiceSelect" aria-label="Select voice">
+                <option>Loading voices</option>
+              </select>
+              <div class="field-row">
+                <button class="control-button primary" id="speakBriefButton" type="button">Speak Brief</button>
+                <button class="control-button" id="stopVoiceButton" type="button">Stop</button>
+              </div>
+              <button class="control-button" id="explainToggle" type="button" aria-pressed="true">Explain Mode On</button>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="panel" id="categories" aria-labelledby="categoriesTitle" style="margin-top: 16px;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h3 id="categoriesTitle">Inflation Heatmap</h3>
+            <p>Tap a category to make the chart, voice brief, and cost illustration focus on that series.</p>
+          </div>
+          <span class="pulse-tag" id="selectedCategory">Headline CPI</span>
+        </div>
+        <div class="heatmap-grid" id="categoryGrid"></div>
+      </section>
+
+      <section class="impact-grid" aria-label="Inflation impact and monthly pressure">
+        <div class="panel" aria-labelledby="impactTitle">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3 id="impactTitle">Inflation Cost Illustration</h3>
+              <p>Illustrates what an equivalent category basket would have cost one year earlier if its price changed at the selected CPI category rate.</p>
+            </div>
+          </div>
+          <div class="calculator">
+            <label for="scenarioAmount" class="metric-label">Current basket value</label>
+            <div class="field-row">
+              <input class="input" id="scenarioAmount" type="number" min="1" step="25" value="100" inputmode="decimal">
+              <button class="control-button" id="scenarioButton" type="button">Calculate</button>
+            </div>
+            <div class="impact-result" id="scenarioResult" aria-live="polite">
+              <strong>Waiting for CPI data</strong>
+              <p>The calculator will update when the latest reading is ready.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" aria-labelledby="latticeTitle">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3 id="latticeTitle">Twelve-Month Pressure Map</h3>
+              <p>Each cell shows the year-over-year rate for the selected category.</p>
+            </div>
+          </div>
+          <div class="month-lattice" id="monthLattice"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="methodology" aria-labelledby="methodologyTitle" style="margin-top: 16px;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h3 id="methodologyTitle">Analytics Methodology</h3>
+            <p>Transparent calculations designed to make CPI trends, category differences, and recent inflation dynamics easier to interpret.</p>
+          </div>
+        </div>
+        <div class="method-list">
+          <div class="method-item">
+            <strong>Data source</strong>
+            <span>The dashboard requests 18 CPI-U series across unadjusted and seasonally adjusted versions, staying below BLS public API request limits while labeling fallback data clearly.</span>
+          </div>
+          <div class="method-item">
+            <strong>Year-over-year inflation</strong>
+            <span>Calculated as the latest index divided by the same month one year earlier, minus one, then expressed as a percent.</span>
+          </div>
+          <div class="method-item">
+            <strong>Monthly movement</strong>
+            <span>Calculated from seasonally adjusted CPI series where available. This avoids presenting ordinary seasonal patterns as short-term inflation dynamics.</span>
+          </div>
+          <div class="method-item">
+            <strong>CPI Pressure Index</strong>
+            <span>An experimental dashboard-specific indicator from headline inflation, seasonally adjusted monthly speed, broad category movement, and recent volatility. It is not an official BLS measure.</span>
+          </div>
+        </div>
+        <div class="source-footer">
+          <span>For research and educational purposes. This is not policy, investment, or financial advice.</span>
+          <a href="https://www.bls.gov/developers/api_signature_v2.htm" target="_blank" rel="noopener noreferrer">BLS Public Data API</a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-dock" aria-label="Mobile navigation">
+    <a href="#overview">Overview</a>
+    <a href="#chart">Chart</a>
+    <a href="#categories">Heatmap</a>
+    <a href="#voice">Voice</a>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const BLS_ENDPOINT = "https://api.bls.gov/publicAPI/v2/timeseries/data/";
+
+    const SERIES = [
+      { key: "headline", id: "CUUR0000SA0", saId: "CUSR0000SA0", label: "Headline CPI", short: "All items", plain: "all consumer prices", color: "#57d39f" },
+      { key: "core", id: "CUUR0000SA0L1E", saId: "CUSR0000SA0L1E", label: "Core CPI", short: "Core", plain: "prices excluding food and energy", color: "#78a8ff" },
+      { key: "food", id: "CUUR0000SAF1", saId: "CUSR0000SAF1", label: "Food", short: "Food", plain: "food prices", color: "#f1b84b" },
+      { key: "energy", id: "CUUR0000SA0E", saId: "CUSR0000SA0E", label: "Energy", short: "Energy", plain: "energy prices", color: "#f06464" },
+      { key: "shelter", id: "CUUR0000SAH1", saId: "CUSR0000SAH1", label: "Shelter", short: "Shelter", plain: "housing shelter costs", color: "#b991ff" },
+      { key: "medical", id: "CUUR0000SAM", saId: "CUSR0000SAM", label: "Medical Care", short: "Medical", plain: "medical care prices", color: "#65d8e8" },
+      { key: "transport", id: "CUUR0000SAT", saId: "CUSR0000SAT", label: "Transportation", short: "Transport", plain: "transportation prices", color: "#ff8e72" },
+      { key: "apparel", id: "CUUR0000SAA", saId: "CUSR0000SAA", label: "Apparel", short: "Apparel", plain: "clothing prices", color: "#a7d66d" },
+      { key: "education", id: "CUUR0000SAE", saId: "CUSR0000SAE", label: "Education and Communication", short: "Education", plain: "education and communication prices", color: "#d4b06a" }
+    ];
+
+    const REQUEST_YEAR_SPAN = 7;
+
+    const els = {
+      themeToggle: document.getElementById("themeToggle"),
+      refreshButton: document.getElementById("refreshButton"),
+      speakHeroButton: document.getElementById("speakHeroButton"),
+      headlineValue: document.getElementById("headlineValue"),
+      yoyValue: document.getElementById("yoyValue"),
+      momValue: document.getElementById("momValue"),
+      coreValue: document.getElementById("coreValue"),
+      latestPeriod: document.getElementById("latestPeriod"),
+      yoyStatus: document.getElementById("yoyStatus"),
+      momStatus: document.getElementById("momStatus"),
+      dataSource: document.getElementById("dataSource"),
+      dataMode: document.getElementById("dataMode"),
+      lastUpdated: document.getElementById("lastUpdated"),
+      demoBanner: document.getElementById("demoBanner"),
+      chart: document.getElementById("cpiChart"),
+      chartTooltip: document.getElementById("chartTooltip"),
+      chartTitle: document.getElementById("chartTitle"),
+      chartSubtitle: document.getElementById("chartSubtitle"),
+      pressureDial: document.getElementById("pressureDial"),
+      pressureValue: document.getElementById("pressureValue"),
+      pressureLabel: document.getElementById("pressureLabel"),
+      pressureBrief: document.getElementById("pressureBrief"),
+      inflationBrief: document.getElementById("inflationBrief"),
+      voiceSelect: document.getElementById("voiceSelect"),
+      speakBriefButton: document.getElementById("speakBriefButton"),
+      stopVoiceButton: document.getElementById("stopVoiceButton"),
+      explainToggle: document.getElementById("explainToggle"),
+      categoryGrid: document.getElementById("categoryGrid"),
+      selectedCategory: document.getElementById("selectedCategory"),
+      scenarioAmount: document.getElementById("scenarioAmount"),
+      scenarioButton: document.getElementById("scenarioButton"),
+      scenarioResult: document.getElementById("scenarioResult"),
+      monthLattice: document.getElementById("monthLattice"),
+      toast: document.getElementById("toast")
+    };
+
+    const state = {
+      series: {},
+      saSeries: {},
+      selectedKey: "headline",
+      chartMode: "yoy",
+      range: "5y",
+      chartPoints: [],
+      usingFallback: false,
+      explainMode: true,
+      voices: [],
+      selectedVoiceURI: "",
+      pressureScore: 0
+    };
+
+    const nf = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
+    const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function percentChange(current, previous) {
+      if (!Number.isFinite(current) || !Number.isFinite(previous) || previous === 0) return null;
+      return ((current / previous) - 1) * 100;
+    }
+
+    function formatPct(value, digits = 1) {
+      if (!Number.isFinite(value)) return "--";
+      const sign = value > 0 ? "+" : "";
+      return sign + value.toFixed(digits) + "%";
+    }
+
+    function formatDate(point) {
+      if (!point) return "Waiting";
+      return point.monthName + " " + point.year;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function findConfig(key) {
+      return SERIES.find((item) => item.key === key) || SERIES[0];
+    }
+
+    function allSeriesIds() {
+      return SERIES.flatMap((item) => [item.id, item.saId]).filter(Boolean);
+    }
+
+    function emptySeriesStore() {
+      return SERIES.reduce((acc, config) => {
+        acc[config.key] = [];
+        return acc;
+      }, {});
+    }
+
+    function findSeriesMatch(seriesID) {
+      for (const config of SERIES) {
+        if (config.id === seriesID) return { config, adjustment: "nsa" };
+        if (config.saId === seriesID) return { config, adjustment: "sa" };
+      }
+      return null;
+    }
+
+    function colorForRate(rate) {
+      if (!Number.isFinite(rate)) return "#8792a4";
+      if (rate < 1.5) return "#57d39f";
+      if (rate < 3.2) return "#f1b84b";
+      if (rate < 5) return "#ff8e72";
+      return "#f06464";
+    }
+
+    function statusForRate(rate) {
+      if (!Number.isFinite(rate)) return "Waiting";
+      if (rate < 1.5) return "Cool";
+      if (rate < 3.2) return "Steady";
+      if (rate < 5) return "Elevated";
+      return "Hot";
+    }
+
+    function monthKey(year, month) {
+      return String(year) + "-" + String(month).padStart(2, "0");
+    }
+
+    function enrichSeries(points) {
+      const byMonth = new Map(points.map((point) => [point.key, point]));
+      return points.map((point, index) => {
+        const previous = points[index - 1];
+        const yearBack = byMonth.get(monthKey(point.year - 1, point.month));
+        const mom = previous ? percentChange(point.value, previous.value) : null;
+        const yoy = yearBack ? percentChange(point.value, yearBack.value) : null;
+        return { ...point, mom, yoy };
+      });
+    }
+
+    function latestPoint(key) {
+      const series = state.series[key] || [];
+      for (let index = series.length - 1; index >= 0; index -= 1) {
+        if (Number.isFinite(series[index].value)) return series[index];
+      }
+      return null;
+    }
+
+    function latestWithYoY(key) {
+      const series = state.series[key] || [];
+      for (let index = series.length - 1; index >= 0; index -= 1) {
+        if (Number.isFinite(series[index].yoy)) return series[index];
+      }
+      return latestPoint(key);
+    }
+
+    function latestWithMoM(key) {
+      const adjusted = state.saSeries[key] || [];
+      for (let index = adjusted.length - 1; index >= 0; index -= 1) {
+        if (Number.isFinite(adjusted[index].mom)) return adjusted[index];
+      }
+
+      const unadjusted = state.series[key] || [];
+      for (let index = unadjusted.length - 1; index >= 0; index -= 1) {
+        if (Number.isFinite(unadjusted[index].mom)) return { ...unadjusted[index], usesUnadjustedMoM: true };
+      }
+
+      return null;
+    }
+
+    function momSeriesForKey(key) {
+      const adjusted = state.saSeries[key] || [];
+      return adjusted.some((point) => Number.isFinite(point.mom)) ? adjusted : (state.series[key] || []);
+    }
+
+    function momLabelForKey(key) {
+      const adjusted = state.saSeries[key] || [];
+      return adjusted.some((point) => Number.isFinite(point.mom)) ? "SA MoM" : "NSA MoM";
+    }
+
+    function chartMetricLabel() {
+      if (state.chartMode === "mom") return momLabelForKey(state.selectedKey);
+      if (state.chartMode === "yoy") return "NSA YoY";
+      return "NSA Index";
+    }
+
+    function parseBlsData(payload) {
+      const output = { nsa: emptySeriesStore(), sa: emptySeriesStore() };
+      const resultNode = payload && Array.isArray(payload.Results) ? payload.Results[0] : payload && payload.Results;
+      const seriesList = resultNode && resultNode.series ? resultNode.series : [];
+      seriesList.forEach((item) => {
+        const match = findSeriesMatch(item.seriesID);
+        if (!match) return;
+
+        const rows = (item.data || [])
+          .filter((row) => /^M\d{2}$/.test(row.period))
+          .map((row) => {
+            const month = Number(row.period.replace("M", ""));
+            const year = Number(row.year);
+            return {
+              key: monthKey(year, month),
+              year,
+              month,
+              monthName: row.periodName,
+              value: Number(row.value)
+            };
+          })
+          .filter((row) => Number.isFinite(row.value))
+          .sort((a, b) => a.year === b.year ? a.month - b.month : a.year - b.year);
+
+        output[match.adjustment][match.config.key] = enrichSeries(rows);
+      });
+
+      return output;
+    }
+
+    function buildFallbackSeries() {
+      const now = new Date();
+      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const months = [];
+      for (let i = 83; i >= 0; i -= 1) {
+        const date = new Date(lastMonth.getFullYear(), lastMonth.getMonth() - i, 1);
+        months.push({
+          year: date.getFullYear(),
+          month: date.getMonth() + 1,
+          monthName: date.toLocaleString("en-US", { month: "long" }),
+          key: monthKey(date.getFullYear(), date.getMonth() + 1)
+        });
+      }
+
+      const profile = {
+        headline: { start: 255, monthly: 0.26, wave: 1.7 },
+        core: { start: 258, monthly: 0.24, wave: 1.1 },
+        food: { start: 250, monthly: 0.29, wave: 1.8 },
+        energy: { start: 216, monthly: 0.18, wave: 9.4 },
+        shelter: { start: 270, monthly: 0.31, wave: 0.9 },
+        medical: { start: 455, monthly: 0.22, wave: 0.8 },
+        transport: { start: 220, monthly: 0.25, wave: 4.8 },
+        apparel: { start: 124, monthly: 0.09, wave: 2.1 },
+        education: { start: 148, monthly: 0.18, wave: 1.0 }
+      };
+
+      const nsa = emptySeriesStore();
+      const sa = emptySeriesStore();
+
+      SERIES.forEach((config) => {
+        const settings = profile[config.key] || profile.headline;
+        const nsaRows = months.map((date, index) => {
+          const trend = settings.start * Math.pow(1 + settings.monthly / 100, index);
+          const cycle = Math.sin(index / 5.2) * settings.wave + Math.cos(index / 13) * (settings.wave / 2);
+          return {
+            ...date,
+            value: Number((trend + cycle).toFixed(3))
+          };
+        });
+        const saRows = months.map((date, index) => {
+          const trend = settings.start * Math.pow(1 + settings.monthly / 100, index);
+          const cycle = Math.sin(index / 8.5) * (settings.wave / 2.8);
+          return {
+            ...date,
+            value: Number((trend + cycle).toFixed(3))
+          };
+        });
+        nsa[config.key] = enrichSeries(nsaRows);
+        sa[config.key] = enrichSeries(saRows);
+      });
+
+      return { nsa, sa };
+    }
+
+    async function fetchBlsSeries() {
+      const endYear = new Date().getFullYear();
+      const payload = {
+        seriesid: allSeriesIds(),
+        startyear: String(endYear - REQUEST_YEAR_SPAN),
+        endyear: String(endYear)
+      };
+
+      const response = await fetch(BLS_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error("BLS request failed with status " + response.status);
+      }
+
+      const data = await response.json();
+      if (data.status !== "REQUEST_SUCCEEDED") {
+        throw new Error((data.message || ["BLS request was not successful"]).join(" "));
+      }
+
+      return parseBlsData(data);
+    }
+
+    function calculatePressureScore() {
+      const headline = latestWithYoY("headline");
+      const headlineMom = latestWithMoM("headline");
+      const energy = latestWithYoY("energy");
+      const shelter = latestWithYoY("shelter");
+      const categories = SERIES.map((config) => latestWithYoY(config.key)).filter(Boolean);
+      const categoryBreadth = categories.length
+        ? categories.filter((point) => Number.isFinite(point.yoy) && point.yoy >= 3).length / categories.length
+        : 0;
+      const headlineSeries = momSeriesForKey("headline");
+      const recent = headlineSeries.slice(-7).map((point) => point.mom).filter(Number.isFinite);
+      const volatility = recent.length > 1
+        ? Math.sqrt(recent.reduce((sum, value) => sum + Math.pow(value - average(recent), 2), 0) / recent.length)
+        : 0;
+
+      const base = 38;
+      const headlineWeight = Number.isFinite(headline && headline.yoy) ? (headline.yoy - 2) * 9 : 0;
+      const monthlyWeight = Number.isFinite(headlineMom && headlineMom.mom) ? headlineMom.mom * 10 : 0;
+      const energyWeight = Number.isFinite(energy && energy.yoy) ? clamp(energy.yoy, -5, 12) * 0.9 : 0;
+      const shelterWeight = Number.isFinite(shelter && shelter.yoy) ? (shelter.yoy - 2.4) * 2.4 : 0;
+      const breadthWeight = categoryBreadth * 22;
+      const volatilityWeight = volatility * 18;
+      return Math.round(clamp(base + headlineWeight + monthlyWeight + energyWeight + shelterWeight + breadthWeight + volatilityWeight, 0, 100));
+    }
+
+    function average(values) {
+      return values.reduce((sum, value) => sum + value, 0) / values.length;
+    }
+
+    function pressureLabel(score) {
+      if (score < 30) return "Cool";
+      if (score < 55) return "Balanced";
+      if (score < 75) return "Elevated";
+      return "Hot";
+    }
+
+    function applyThemeFromStorage() {
+      const saved = localStorage.getItem("cpi-theme");
+      if (saved === "light" || saved === "dark") {
+        document.documentElement.dataset.theme = saved;
+      }
+      updateThemeButton();
+    }
+
+    function updateThemeButton() {
+      const theme = document.documentElement.dataset.theme;
+      els.themeToggle.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+    }
+
+    function toggleTheme() {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem("cpi-theme", next);
+      updateThemeButton();
+      drawChart();
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.style.display = "block";
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => {
+        els.toast.style.display = "none";
+      }, 3200);
+    }
+
+    async function loadData() {
+      els.dataMode.textContent = "Connecting";
+      els.refreshButton.disabled = true;
+      els.refreshButton.innerHTML = '<span class="dot"></span>Loading';
+
+      try {
+        const data = await fetchBlsSeries();
+        state.series = data.nsa;
+        state.saSeries = data.sa;
+        state.usingFallback = false;
+        els.dataMode.textContent = "Live BLS API";
+        els.dataSource.textContent = "U.S. Bureau of Labor Statistics";
+        els.demoBanner.hidden = true;
+        els.demoBanner.classList.remove("is-visible");
+      } catch (error) {
+        const data = buildFallbackSeries();
+        state.series = data.nsa;
+        state.saSeries = data.sa;
+        state.usingFallback = true;
+        els.dataMode.textContent = "Demo Mode";
+        els.dataSource.textContent = "Simulated demo data";
+        els.demoBanner.hidden = false;
+        els.demoBanner.classList.add("is-visible");
+        showToast("Demo Mode is active. The values shown are simulated and are not actual CPI observations.");
+      } finally {
+        els.lastUpdated.textContent = new Date().toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
+        els.refreshButton.disabled = false;
+        els.refreshButton.innerHTML = '<span class="dot"></span>Refresh Data';
+        renderAll();
+      }
+    }
+
+    function renderAll() {
+      renderMetrics();
+      renderCategories();
+      renderPressure();
+      renderBrief();
+      renderScenario();
+      renderLattice();
+      updateChartLabels();
+      drawChart();
+    }
+
+    function renderMetrics() {
+      const headline = latestWithYoY("headline");
+      const headlineMom = latestWithMoM("headline");
+      const core = latestWithYoY("core");
+      els.latestPeriod.textContent = formatDate(headline);
+      els.headlineValue.textContent = headline ? nf.format(headline.value) : "--";
+      els.yoyValue.textContent = headline ? formatPct(headline.yoy) : "--";
+      els.momValue.textContent = headlineMom ? formatPct(headlineMom.mom) : "--";
+      els.momStatus.textContent = momLabelForKey("headline");
+      els.coreValue.textContent = core ? formatPct(core.yoy) : "--";
+      els.yoyStatus.textContent = headline ? statusForRate(headline.yoy) : "--";
+    }
+
+    function renderCategories() {
+      const html = SERIES.map((config) => {
+        const point = latestWithYoY(config.key);
+        const momPoint = latestWithMoM(config.key);
+        const series = (state.series[config.key] || []).slice(-12);
+        const yoyValues = series.map((row) => row.yoy).filter(Number.isFinite);
+        const max = Math.max(1, ...yoyValues.map((value) => Math.abs(value)));
+        const heat = colorForRate(point && point.yoy);
+        const bars = series.map((row) => {
+          const height = Number.isFinite(row.yoy) ? clamp(20 + Math.abs(row.yoy) / max * 80, 8, 100) : 8;
+          return '<span title="' + escapeHtml(row.monthName + " " + row.year + ": " + formatPct(row.yoy)) + '" style="height:' + height.toFixed(0) + '%"></span>';
+        }).join("");
+
+        return [
+          '<button class="category-tile" type="button" data-category="' + escapeHtml(config.key) + '" aria-pressed="' + String(state.selectedKey === config.key) + '" style="--heat:' + heat + '">',
+          '<h4>' + escapeHtml(config.label) + '</h4>',
+          '<span class="series-code">' + escapeHtml(config.id) + '</span>',
+          '<span class="tile-rate">' + escapeHtml(formatPct(point && point.yoy)) + '</span>',
+          '<span class="tile-note">' + escapeHtml(formatPct(momPoint && momPoint.mom, 2)) + ' ' + escapeHtml(momLabelForKey(config.key)) + '</span>',
+          '<div class="sparkline" aria-hidden="true">' + bars + '</div>',
+          '</button>'
+        ].join("");
+      }).join("");
+
+      els.categoryGrid.innerHTML = html;
+      els.selectedCategory.textContent = findConfig(state.selectedKey).label;
+
+      els.categoryGrid.querySelectorAll("[data-category]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.selectedKey = button.dataset.category;
+          renderAll();
+        });
+      });
+    }
+
+    function renderPressure() {
+      state.pressureScore = calculatePressureScore();
+      const label = pressureLabel(state.pressureScore);
+      const dialColor = state.pressureScore < 30
+        ? "#57d39f"
+        : state.pressureScore < 55
+          ? "#f1b84b"
+          : state.pressureScore < 75
+            ? "#ff8e72"
+            : "#f06464";
+
+      els.pressureDial.style.setProperty("--score", String(state.pressureScore));
+      els.pressureDial.style.setProperty("--dial-color", dialColor);
+      els.pressureValue.textContent = String(state.pressureScore);
+      els.pressureLabel.textContent = label;
+
+      const headline = latestWithYoY("headline");
+      const selected = latestWithYoY(state.selectedKey);
+      const selectedConfig = findConfig(state.selectedKey);
+      els.pressureBrief.innerHTML = headline
+        ? 'Headline CPI is <strong>' + escapeHtml(formatPct(headline.yoy)) + '</strong> year over year. ' +
+          escapeHtml(selectedConfig.short) + ' is reading <strong>' + escapeHtml(formatPct(selected && selected.yoy)) + '</strong>, placing the experimental CPI Pressure Index in the ' + escapeHtml(label.toLowerCase()) + ' zone.'
+        : "The dashboard is preparing the first inflation reading.";
+    }
+
+    function buildBrief() {
+      const headline = latestWithYoY("headline");
+      const headlineMom = latestWithMoM("headline");
+      const core = latestWithYoY("core");
+      const selected = latestWithYoY(state.selectedKey);
+      const selectedMom = latestWithMoM(state.selectedKey);
+      const selectedConfig = findConfig(state.selectedKey);
+      const hottest = SERIES
+        .map((config) => ({ config, point: latestWithYoY(config.key) }))
+        .filter((item) => item.point && Number.isFinite(item.point.yoy))
+        .sort((a, b) => b.point.yoy - a.point.yoy)[0];
+      const coolest = SERIES
+        .map((config) => ({ config, point: latestWithYoY(config.key) }))
+        .filter((item) => item.point && Number.isFinite(item.point.yoy))
+        .sort((a, b) => a.point.yoy - b.point.yoy)[0];
+
+      if (!headline) {
+        return "CPI data is still loading. Please try the voice briefing again in a few seconds.";
+      }
+
+      const sourceText = state.usingFallback
+        ? "Demo Mode is active because the live request did not complete. The values being shown are simulated for interface demonstration and should not be interpreted as actual CPI observations."
+        : "The data source is the United States Bureau of Labor Statistics Public Data API.";
+
+      const headlineMomLabel = momLabelForKey("headline") === "SA MoM"
+        ? "seasonally adjusted monthly move"
+        : "not seasonally adjusted monthly move";
+      const simpleOpening = "Latest CPI reading: " + formatDate(headline) + ". Headline CPI is " + formatPct(headline.yoy) + " over the past year on a not seasonally adjusted basis, with a " + formatPct(headlineMom && headlineMom.mom, 2) + " " + headlineMomLabel + ".";
+      const coreText = core ? " Core inflation is " + formatPct(core.yoy) + " year over year." : "";
+      const categoryText = selected ? " The selected category, " + selectedConfig.label + ", is at " + formatPct(selected.yoy) + " year over year, with a " + formatPct(selectedMom && selectedMom.mom, 2) + " " + momLabelForKey(state.selectedKey) + " reading." : "";
+      const heatText = hottest ? " The strongest category pressure is " + hottest.config.label + " at " + formatPct(hottest.point.yoy) + "." : "";
+      const coolText = coolest ? " The softest category in this view is " + coolest.config.label + " at " + formatPct(coolest.point.yoy) + "." : "";
+      const scoreText = " The experimental CPI Pressure Index is " + state.pressureScore + " out of 100, which is classified as " + pressureLabel(state.pressureScore) + ".";
+      const explainText = state.explainMode
+        ? " In plain English, CPI tracks how prices paid by consumers change over time. Year over year compares the latest month with the same month one year earlier. Seasonally adjusted monthly changes are better for short-term trend reading because they reduce normal seasonal patterns."
+        : "";
+      const disclaimer = " This is an analytical briefing for research and education, not financial advice.";
+
+      return simpleOpening + coreText + categoryText + heatText + coolText + scoreText + explainText + " " + sourceText + disclaimer;
+    }
+
+    function renderBrief() {
+      const text = buildBrief();
+      els.inflationBrief.textContent = text;
+    }
+
+    function renderScenario() {
+      const amount = Math.max(1, Number(els.scenarioAmount.value) || 100);
+      const selected = latestWithYoY(state.selectedKey);
+      const config = findConfig(state.selectedKey);
+
+      if (!selected || !Number.isFinite(selected.yoy)) {
+        els.scenarioResult.innerHTML = '<strong>Waiting for CPI data</strong><p>The calculator will update when the latest reading is ready.</p>';
+        return;
+      }
+
+      const priorCost = amount / (1 + selected.yoy / 100);
+      const difference = amount - priorCost;
+      const direction = difference >= 0 ? "more" : "less";
+      els.scenarioResult.innerHTML = [
+        '<strong>' + escapeHtml(money.format(amount)) + ' today</strong>',
+        '<p>An equivalent ' + escapeHtml(config.short.toLowerCase()) + ' basket priced at ' + escapeHtml(money.format(amount)) + ' now would have cost roughly ' + escapeHtml(money.format(priorCost)) + ' one year earlier if it changed at the selected CPI category rate. That is about ' + escapeHtml(money.format(Math.abs(difference))) + ' ' + direction + '.</p>'
+      ].join("");
+    }
+
+    function renderLattice() {
+      const series = (state.series[state.selectedKey] || []).filter((row) => Number.isFinite(row.yoy)).slice(-12);
+      if (!series.length) {
+        els.monthLattice.innerHTML = '<div class="month-cell" style="--heat:#8792a4"><span>Wait</span><strong>--</strong></div>';
+        return;
+      }
+
+      els.monthLattice.innerHTML = series.map((point) => {
+        const heat = colorForRate(point.yoy);
+        return [
+          '<div class="month-cell" style="--heat:' + heat + '" title="' + escapeHtml(point.monthName + " " + point.year) + '">',
+          '<span>' + escapeHtml(point.monthName.slice(0, 3)) + '</span>',
+          '<strong>' + escapeHtml(formatPct(point.yoy, 1)) + '</strong>',
+          '</div>'
+        ].join("");
+      }).join("");
+    }
+
+    function updateChartLabels() {
+      const config = findConfig(state.selectedKey);
+      const modeLabel = state.chartMode === "yoy" ? "NSA year-over-year rate" : state.chartMode === "mom" ? momLabelForKey(state.selectedKey) : "NSA index level";
+      els.chartTitle.textContent = config.label + " Trend";
+      els.chartSubtitle.textContent = modeLabel + " for " + config.plain + ".";
+    }
+
+    function getChartData() {
+      const all = state.chartMode === "mom" ? momSeriesForKey(state.selectedKey) : (state.series[state.selectedKey] || []);
+      const comparable = all.filter((point) => {
+        if (state.chartMode === "index") return Number.isFinite(point.value);
+        return Number.isFinite(point[state.chartMode]);
+      });
+
+      if (state.range === "2y") return comparable.slice(-24);
+      if (state.range === "5y") return comparable.slice(-60);
+      return comparable;
+    }
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function drawChart() {
+      const canvas = els.chart;
+      const frame = canvas.parentElement;
+      const width = Math.max(280, Math.floor(frame.clientWidth));
+      const height = Math.max(240, Math.floor(frame.clientHeight));
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(width * ratio);
+      canvas.height = Math.floor(height * ratio);
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+
+      const text = cssVar("--text") || "#f4f7fb";
+      const muted = cssVar("--muted") || "#94a3b8";
+      const line = cssVar("--line") || "rgba(255,255,255,0.16)";
+      const config = findConfig(state.selectedKey);
+      const data = getChartData();
+      const key = state.chartMode === "index" ? "value" : state.chartMode;
+      state.chartPoints = [];
+
+      ctx.fillStyle = "rgba(255,255,255,0.03)";
+      ctx.fillRect(0, 0, width, height);
+
+      if (data.length < 2) {
+        ctx.fillStyle = muted;
+        ctx.font = "700 13px Inter, system-ui, sans-serif";
+        ctx.fillText("Waiting for enough data to draw the chart.", 22, 38);
+        return;
+      }
+
+      const padding = {
+        top: 28,
+        right: width < 520 ? 16 : 34,
+        bottom: width < 520 ? 48 : 42,
+        left: width < 520 ? 44 : 58
+      };
+      const plotW = width - padding.left - padding.right;
+      const plotH = height - padding.top - padding.bottom;
+      const values = data.map((point) => point[key]).filter(Number.isFinite);
+      let min = Math.min(...values);
+      let max = Math.max(...values);
+      if (min === max) {
+        min -= 1;
+        max += 1;
+      }
+      const pad = Math.max((max - min) * 0.18, state.chartMode === "index" ? 1 : 0.25);
+      min -= pad;
+      max += pad;
+
+      ctx.strokeStyle = line;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i <= 4; i += 1) {
+        const y = padding.top + (plotH / 4) * i;
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = muted;
+      ctx.font = "700 11px Inter, system-ui, sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (let i = 0; i <= 4; i += 1) {
+        const value = max - ((max - min) / 4) * i;
+        const label = state.chartMode === "index" ? value.toFixed(1) : value.toFixed(1) + "%";
+        ctx.fillText(label, padding.left - 9, padding.top + (plotH / 4) * i);
+      }
+
+      function xFor(index) {
+        return padding.left + (plotW * index) / Math.max(1, data.length - 1);
+      }
+
+      function yFor(value) {
+        return padding.top + plotH - ((value - min) / (max - min)) * plotH;
+      }
+
+      const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+      gradient.addColorStop(0, config.color + "55");
+      gradient.addColorStop(1, config.color + "00");
+
+      ctx.beginPath();
+      data.forEach((point, index) => {
+        const x = xFor(index);
+        const y = yFor(point[key]);
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.lineTo(xFor(data.length - 1), height - padding.bottom);
+      ctx.lineTo(xFor(0), height - padding.bottom);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.beginPath();
+      data.forEach((point, index) => {
+        const x = xFor(index);
+        const y = yFor(point[key]);
+        state.chartPoints.push({ x, y, point, value: point[key] });
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = config.color;
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      const last = state.chartPoints[state.chartPoints.length - 1];
+      if (last) {
+        ctx.beginPath();
+        ctx.arc(last.x, last.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = config.color;
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = cssVar("--bg");
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = muted;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const labelIndexes = [0, Math.floor(data.length / 2), data.length - 1];
+      labelIndexes.forEach((index) => {
+        const point = data[index];
+        if (!point) return;
+        const label = point.monthName.slice(0, 3) + " " + String(point.year).slice(2);
+        ctx.fillText(label, xFor(index), height - padding.bottom + 16);
+      });
+
+      ctx.fillStyle = text;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.font = "800 12px Inter, system-ui, sans-serif";
+      ctx.fillText(config.label + " " + chartMetricLabel(), padding.left, 12);
+    }
+
+    function showChartTooltip(event) {
+      if (!state.chartPoints.length) return;
+      const rect = els.chart.getBoundingClientRect();
+      const clientX = event.touches && event.touches[0] ? event.touches[0].clientX : event.clientX;
+      const x = clientX - rect.left;
+      let closest = state.chartPoints[0];
+      state.chartPoints.forEach((entry) => {
+        if (Math.abs(entry.x - x) < Math.abs(closest.x - x)) closest = entry;
+      });
+
+      const unit = state.chartMode === "index" ? "" : "%";
+      const value = state.chartMode === "index" ? closest.value.toFixed(3) : closest.value.toFixed(2) + unit;
+      els.chartTooltip.innerHTML = '<strong>' + escapeHtml(formatDate(closest.point)) + '</strong><span>' + escapeHtml(findConfig(state.selectedKey).label + " " + chartMetricLabel() + ": " + value) + '</span>';
+      els.chartTooltip.style.display = "block";
+      const left = clamp(closest.x + 14, 10, rect.width - 222);
+      const top = clamp(closest.y - 34, 10, rect.height - 86);
+      els.chartTooltip.style.left = left + "px";
+      els.chartTooltip.style.top = top + "px";
+    }
+
+    function hideChartTooltip() {
+      els.chartTooltip.style.display = "none";
+    }
+
+    function populateVoices() {
+      const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+      state.voices = voices;
+
+      if (!voices.length) {
+        els.voiceSelect.innerHTML = '<option value="">Default browser voice</option>';
+        return;
+      }
+
+      const options = voices
+        .slice()
+        .sort((a, b) => a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name))
+        .map((voice) => '<option value="' + escapeHtml(voice.voiceURI) + '">' + escapeHtml(voice.name + " (" + voice.lang + ")") + '</option>')
+        .join("");
+
+      els.voiceSelect.innerHTML = '<option value="">Default browser voice</option>' + options;
+
+      const preferred = voices.find((voice) => voice.lang && voice.lang.toLowerCase().startsWith("en-us")) || voices.find((voice) => voice.lang && voice.lang.toLowerCase().startsWith("en"));
+      if (!state.selectedVoiceURI && preferred) {
+        state.selectedVoiceURI = preferred.voiceURI;
+        els.voiceSelect.value = preferred.voiceURI;
+      }
+    }
+
+    function speakBrief() {
+      if (!("speechSynthesis" in window)) {
+        showToast("This browser does not support speech synthesis.");
+        return;
+      }
+
+      const text = buildBrief();
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const selectedVoice = state.voices.find((voice) => voice.voiceURI === state.selectedVoiceURI);
+      if (selectedVoice) utterance.voice = selectedVoice;
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function bindEvents() {
+      els.themeToggle.addEventListener("click", toggleTheme);
+      els.refreshButton.addEventListener("click", loadData);
+      els.speakHeroButton.addEventListener("click", speakBrief);
+      els.speakBriefButton.addEventListener("click", speakBrief);
+      els.stopVoiceButton.addEventListener("click", () => {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      });
+      els.voiceSelect.addEventListener("change", () => {
+        state.selectedVoiceURI = els.voiceSelect.value;
+      });
+      els.explainToggle.addEventListener("click", () => {
+        state.explainMode = !state.explainMode;
+        els.explainToggle.textContent = state.explainMode ? "Explain Mode On" : "Explain Mode Off";
+        els.explainToggle.setAttribute("aria-pressed", String(state.explainMode));
+        renderBrief();
+      });
+      els.scenarioAmount.addEventListener("input", renderScenario);
+      els.scenarioButton.addEventListener("click", renderScenario);
+      els.chart.addEventListener("mousemove", showChartTooltip);
+      els.chart.addEventListener("touchmove", showChartTooltip, { passive: true });
+      els.chart.addEventListener("mouseleave", hideChartTooltip);
+      els.chart.addEventListener("touchend", hideChartTooltip);
+
+      document.querySelectorAll("[data-chart-mode]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.chartMode = button.dataset.chartMode;
+          document.querySelectorAll("[data-chart-mode]").forEach((item) => {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+          updateChartLabels();
+          drawChart();
+        });
+      });
+
+      document.querySelectorAll("[data-range]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.range = button.dataset.range;
+          document.querySelectorAll("[data-range]").forEach((item) => {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+          drawChart();
+        });
+      });
+
+      let resizeTimer = 0;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(drawChart, 120);
+      });
+
+      if ("speechSynthesis" in window) {
+        populateVoices();
+        window.speechSynthesis.onvoiceschanged = populateVoices;
+      } else {
+        els.voiceSelect.innerHTML = '<option value="">Voice unavailable in this browser</option>';
+      }
+    }
+
+    applyThemeFromStorage();
+    bindEvents();
+    loadData();
+  </script>
+</body>
+</html>
